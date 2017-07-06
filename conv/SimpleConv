@@ -66,8 +66,33 @@ with tf.Graph().as_default():
 			weights = WeightsVariable(shape=[5,5,1,16],name_str='weights')
 			biases = BiasesVariable(shape=[16],name_str='biases')
 			conv_out = Conv2d(X_image,weights,biases,stride=1,padding='VALID')
+		# nonliner activation layer
+		with tf.name_scope('Activate'):
+			activate_out = Activation(conv_out,activation=tf.nn.relu,name='relu')
+		# the first pooling layer
+		with tf.name_scope('Pool2d'):
+			pool_out = Pool2d(activate_out,pool=tf.nn.max_pool,k=2,stride=2)
+		# change 2 dims features to 1 dim vector
+		with tf.name_scope('FeatsReshape'):
+			features = tf.reshape(pool_out,[-1,12*12*16])
+		# the first fully connection layer
+		with tf.name_scope('FC_Linear'):
+			weights = WeightsVariable(shape=[12*12*16,n_classes],name_str='weights')
+			biases = BiasesVariable(shape=[n_classes],name_str='biases')
+			Ypred_logits = FullyConnected(features,weights,biases,activate=tf.identity,act_name='identity')
 	
+	with tf.name_scope('Loss'):
+		cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y_true,logits=Y_pred_logits))
+	
+	with tf.name_scope('Train'):
 		
+	with tf.name_scope('Evaluate'):
+	
+	init = tf.global_variables_initializer()
+	
+	print("write graphy to event document,check in tensorbroad")
+	summary_writer = tf.summary.FileWriter(logdir='logs/excise311/',graph=tf.get_default_graph())
+	summary_writer.close()
 	
 
 
