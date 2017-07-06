@@ -1,1 +1,92 @@
+import tensorflow as tf
+import numpy as np
+import os
+import csv
+from tensorflow.examples.tutorials.mnist.import input_data
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
+#设置算法超参数
+learning_rate_init = 0.001
+training_epochs = 1
+batch_size = 100
+display_step = 10
+
+# Network Parameters
+# MNIST data input(img shape:28*28)
+n_input = 784 
+# MNIST total classes(0-9 digits)
+n_classes = 10
+
+# return initialed weights of name base on speicify dims
+def WeightsVariable(shape,name_str,stddev=0.1):
+	initial = tf.random_normal(shape=shape,stddev=stddev,dtype=tf.float32)
+	#initial = tf.truncated_normal(shape=shape,stddev=stddev,dtype=tf.float32)
+	return tf.Variable(initial,dtype=tf.float32,name=name_str)
+
+# return initialed bias of name base on specify dims
+def BiasesVariable(shape,name_str,stddev=0.00001):
+	initial = tf.random_normal(shape=shape,stddev=stddev,dtype=tf.float32)
+	#initial = tf.constant(stddev,shape=shape)
+	return tf.Variable(initial,dtype=tf.float32,name=name_str)
+	
+def Conv2d(x,W,b,stride=1,padding='SAME'):
+	with tf.name_scope('Wx_b'):
+		y = tf.nn.conv2d(x,W,stride=[1,stride,stride,1],padding=padding)
+		y = tf.nn.bias_add(y,b)
+	return y
+
+def Activation(x,activation=tf.nn.relu,name='relu'):
+	with tf.name.scope(name):
+		y=activation(x)
+	return y
+
+def Pool2d(x,pool=tf.nn.max_pool,k=2,stride=2):
+	return pool(x,ksize=[1,k,k,1],stride=[1,stride,stride,1],padding='VALID')
+
+def FullyConnected(x,W,b,activate=tf.nn.relu,act_name='relu'):
+	with tf.name_scope('Wx_b'):
+		y=tf.matmul(x,W)
+		y=tf.add(y,b)
+	with tf.name_scope(act_naame):
+		y=activate(y)
+	return y
+
+with tf.Graph().as_default():
+	# input of graph
+	with tf.name_scope('Inputs'):
+		X_origin = tf.placeholder(tf.float32,[None,n_input],name='X_origin')
+		y_true = tf.placeholder(tf.float32,[None,n_classes],name='Y_true')
+		# reshape the image data from N*784 to N*28*28*1 tensor
+		X_image = tf.reshape(X_origin,[-1,28,28,1])
+	# 计算图前向推断过程
+	with tf.name_scope('Inference'):
+		# first conv layer(conv2d + bias)
+		with tf.name_scope('Conv2d'):
+			weights = WeightsVariable(shape=[5,5,1,16],name_str='weights')
+			biases = BiasesVariable(shape=[16],name_str='biases')
+			conv_out = Conv2d(X_image,weights,biases,stride=1,padding='VALID')
+	
+		
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
