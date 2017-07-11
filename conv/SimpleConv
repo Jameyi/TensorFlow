@@ -99,6 +99,56 @@ with tf.Graph().as_default():
 	summary_writer = tf.summary.FileWriter(logdir='logs/excise311/',graph=tf.get_default_graph())
 	summary_writer.close()
 	
+	# 加载数据集
+	mnist = input_data.read_data_sets("../MNIST_data/",one_hot=True)
+	# 将评估结果保存到文件
+	results_list = list()
+	# 写入参数配置
+	results_list.append(['learning_rate',learning_rate_init,
+			     'traning_epochs',training_epochs,
+			     'batch_size',batch_size,
+			     'display_step',display_step])
+	results_list.append(['train_step','train_loss','validation_loss','train_step','train_accuracy','validation_accuracy'])
+	# 启动计算图
+	with tf.Session() as sess:
+		sess.run(init)
+		total_batches = int(mnist.train.num_examples/batch_size)
+		print("Per batch size:",batch_size)
+		print("Train sample count:",mnist.train.num_examples)
+		print("Total batch count:",total_batches)
+		trainning_step = 0  #记录模型被训练的步数
+		# 训练指定轮数，每一轮所有训练样本都要过一遍
+		for epoch in range(training_epochs):
+			# 每一轮都要把所有的batch跑一遍
+			for batch_idx in range(total_batches):
+				# 取出数据
+				batch_x,batch_y = mnist.train.next_batch(batch_size)
+				# 运行优化器训练节点(backprop)
+				sess.run(trainer,feed_dict={X_origin:batch_x,Y_true:batch_y,learning_rate:learning_rate_init})
+				# 每调用一次训练节点，training_step就加1，最终==training_epochs*total_batch
+				training_step += 1
+				
+				# 每训练display_step次，计算当前模型的损失和分类准确度
+				if training_step % display_step == 0:
+					# 计算当前模型在目前（最近）见过的display_step个batchsize的训练集上的损失和分类准确率
+					start_idx = max(0,(batch_idx-display_step)*batch_size)
+					end_idx = batch_idx*batch_size
+					train_loss,train_acc = EvaluateModelOnDataset(sess,mnist.train.images[start_idx:end_idx,:],
+																	   mnist.train.labels[start_idx:end_idx,:])
+					print("Training Step:" + str(training_step) +
+					      ",Training Loss=" + "{:,6f}".format(train_loss) +
+						  ",Training Accuracy=" + "{:,5f}.format(train_acc))
+					
+					# 计算当前模型在验证集的损失和分类准确率
+					validation_loss,validation_acc = EvaluateModelOnDataset(sess,
+																			mnist.validation.images,
+																			mnist.validation.labels)
+					print("Training Step:" + str(training_step) +
+					      ",Validation Loss=" + "{:,6f}".format(validation_loss) +
+						  ",Validation Accuracy=" + "{:,5f}.format(validation_acc))
+					
+	
+
 
 
 
