@@ -133,20 +133,30 @@ with tf.Graph().as_default():
 					# 计算当前模型在目前（最近）见过的display_step个batchsize的训练集上的损失和分类准确率
 					start_idx = max(0,(batch_idx-display_step)*batch_size)
 					end_idx = batch_idx*batch_size
-					train_loss,train_acc = EvaluateModelOnDataset(sess,mnist.train.images[start_idx:end_idx,:],
-																	   mnist.train.labels[start_idx:end_idx,:])
+					train_loss,train_acc = EvaluateModelOnDataset(sess,mnist.train.images[start_idx:end_idx,:],mnist.train.labels[start_idx:end_idx,:])
 					print("Training Step:" + str(training_step) +
 					      ",Training Loss=" + "{:,6f}".format(train_loss) +
 						  ",Training Accuracy=" + "{:,5f}.format(train_acc))
 					
 					# 计算当前模型在验证集的损失和分类准确率
-					validation_loss,validation_acc = EvaluateModelOnDataset(sess,
-																			mnist.validation.images,
-																			mnist.validation.labels)
+					validation_loss,validation_acc = EvaluateModelOnDataset(sess,mnist.validation.images,mnist.validation.labels)
 					print("Training Step:" + str(training_step) +
 					      ",Validation Loss=" + "{:,6f}".format(validation_loss) +
 						  ",Validation Accuracy=" + "{:,5f}.format(validation_acc))
 					
+					# 将评估结果保存到文件
+					results_list.append([training_step,train_loss,validation_loss,training_step,train_acc,validation_acc])
+				
+		print("Finish training!")
+		
+		# 计算指定数量的测试集准确率
+		test_sample_count = mnist.test.num_examples
+		test_loss,test_accuracy = EvaluateModelOnDataset(sess,mnist.test.image,mnist.test.labels)
+		print("Testing samples count:",test_samples_count)
+		print("Testing Loss:",test_loss)
+		print("Testing Accuracy:",test_accuracy)
+				
+				
 	
 
 
