@@ -52,6 +52,25 @@ def FullyConnected(x,W,b,activate=tf.nn.relu,act_name='relu'):
 		y=activate(y)
 	return y
 
+def EvaluateModelOnData(sess,images,labels):
+	n_samples = images.shape[0]
+	per_batch_size = batch_size
+	loss = 0
+	acc = 0
+	# 样本量比较少的时候，一次性评估完毕；否则拆成若干批次评估，主要防止内存不够用
+	if (n_samples <= per_batch_size):
+		batch_count = 1
+		loss,acc = sess.run([cross_entropy_loss,accuracy],feed_dict={X_origin:images,Y_true:labels,learning_rate:learning_rate_init})
+	else:
+		batch_count = int(n_samples / per_batch_size)
+		batch_start = 0
+		for idx in range(batch_count):
+			batch_loss,batch_acc = sess.run([cross_entropy,accuracy],feed_dict={X_origin:images[batch_start:batch_start+per_batch_size,:],Y_true:labels[batch_start:batch_start+per_batch_size,:],learning_rate:learning_rate_init})
+			batch_start += per_batch_size
+			loss += batch_loss
+			acc += batch_acc
+	return loss/batch_count,acc/batch_count
+
 with tf.Graph().as_default():
 	# input of graph
 	with tf.name_scope('Inputs'):
@@ -155,7 +174,13 @@ with tf.Graph().as_default():
 		print("Testing samples count:",test_samples_count)
 		print("Testing Loss:",test_loss)
 		print("Testing Accuracy:",test_accuracy)
-				
+		return list.append(['test_step','loss',test_loss,'accuracy',test_accuracy])
+		
+		# 将评估结果保存到文件
+		result_file = open('evaluate_results.csv','w',newline='')
+		csv_writer = csv.writer(results_file,dialect='excel')
+		for row in results_list:
+			csv_writer.writerow(row)
 				
 	
 
