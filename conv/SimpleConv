@@ -18,32 +18,36 @@ n_input = 784
 # MNIST total classes(0-9 digits)
 n_classes = 10
 
-# return initialed weights of name base on speicify dims
+# return initialed weights of name base on speicify dims 初始化权值
 def WeightsVariable(shape,name_str,stddev=0.1):
 	initial = tf.random_normal(shape=shape,stddev=stddev,dtype=tf.float32)
 	#initial = tf.truncated_normal(shape=shape,stddev=stddev,dtype=tf.float32)
 	return tf.Variable(initial,dtype=tf.float32,name=name_str)
 
-# return initialed bias of name base on specify dims
+# return initialed bias of name base on specify dims 初始化偏置
 def BiasesVariable(shape,name_str,stddev=0.00001):
 	initial = tf.random_normal(shape=shape,stddev=stddev,dtype=tf.float32)
 	#initial = tf.constant(stddev,shape=shape)
 	return tf.Variable(initial,dtype=tf.float32,name=name_str)
-	
-def Conv2d(x,W,b,stride=1,padding='SAME'):
+
+# 卷积
+def Conv2d(x,W,b,stride=1,padding='SAME'): 
 	with tf.name_scope('Wx_b'):
 		y = tf.nn.conv2d(x,W,stride=[1,stride,stride,1],padding=padding)
 		y = tf.nn.bias_add(y,b)
 	return y
 
+# 激活函数
 def Activation(x,activation=tf.nn.relu,name='relu'):
 	with tf.name.scope(name):
 		y=activation(x)
 	return y
 
+# 池化
 def Pool2d(x,pool=tf.nn.max_pool,k=2,stride=2):
 	return pool(x,ksize=[1,k,k,1],stride=[1,stride,stride,1],padding='VALID')
 
+# 全连接层
 def FullyConnected(x,W,b,activate=tf.nn.relu,act_name='relu'):
 	with tf.name_scope('Wx_b'):
 		y=tf.matmul(x,W)
@@ -52,6 +56,7 @@ def FullyConnected(x,W,b,activate=tf.nn.relu,act_name='relu'):
 		y=activate(y)
 	return y
 
+# 评估模型
 def EvaluateModelOnData(sess,images,labels):
 	n_samples = images.shape[0]
 	per_batch_size = batch_size
@@ -71,14 +76,16 @@ def EvaluateModelOnData(sess,images,labels):
 			acc += batch_acc
 	return loss/batch_count,acc/batch_count
 
+# 建立计算图，主程序
 with tf.Graph().as_default():
-	# input of graph
+	# input of graph 输入层
 	with tf.name_scope('Inputs'):
 		X_origin = tf.placeholder(tf.float32,[None,n_input],name='X_origin')
 		y_true = tf.placeholder(tf.float32,[None,n_classes],name='Y_true')
-		# reshape the image data from N*784 to N*28*28*1 tensor
+		# reshape the image data from N*784 to N*28*28*1 tensor 从N*784的形状转为N*28*28*1，以便作为下一层级输入
 		X_image = tf.reshape(X_origin,[-1,28,28,1])
 	# 计算图前向推断过程
+	# 包含卷积（权重和偏置）->激活->池化->特征转型->全连接（权重和偏置）
 	with tf.name_scope('Inference'):
 		# first conv layer(conv2d + bias)
 		with tf.name_scope('Conv2d'):
@@ -100,20 +107,25 @@ with tf.Graph().as_default():
 			biases = BiasesVariable(shape=[n_classes],name_str='biases')
 			Ypred_logits = FullyConnected(features,weights,biases,activate=tf.identity,act_name='identity')
 	
+	# 计算损失
 	with tf.name_scope('Loss'):
 		cross_entropy_loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=Y_true,logits=Y_pred_logits))
 	
+	# 训练模型，计算梯度，通过梯度优化权重和偏置，减少损失
 	with tf.name_scope('Train'):
 		learning_rate = tf.placeholder(tf.float32)
 		optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 		trainer = optimizer.minimize(cross_entropy_loss)
-		
+	
+	# 计算正确率	
 	with tf.name_scope('Evaluate'):
 		correct_pred = tf.equal(tf.argmax(Ypred_logits,1),tf.argmax(Y_true,1))
 		accuracy = tf.reduce_mean(tf.cast(correct_pred,tf.float32))
-		
+	
+	# 初始化变量，开始运行图
 	init = tf.global_variables_initializer()
 	
+	# tensorboard 相关
 	print("write graphy to event document,check in tensorbroad")
 	summary_writer = tf.summary.FileWriter(logdir='logs/excise311/',graph=tf.get_default_graph())
 	summary_writer.close()
