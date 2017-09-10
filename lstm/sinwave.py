@@ -1,5 +1,6 @@
+# -*- coding:utf-8 -*-
 '''
-Created on 2017年5月21日
+Created on 20170521
 
 @author: weizhen
 '''
