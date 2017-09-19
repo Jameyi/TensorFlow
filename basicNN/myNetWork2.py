@@ -1,6 +1,8 @@
 # -*- coding: UTF-8 -*- 
 import tensorflow as tf
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 def add_layer(inputs, in_size, out_size, activation_function=None):
     # add one more layer and return the output of this layer
     # 区别：大框架，定义层 layer，里面有小部件
@@ -41,6 +43,8 @@ sess = tf.Session()
 # 区别：sess.graph 把所有框架加载到一个文件中放到文件夹"logs/"里 
 # 接着打开terminal，进入你存放的文件夹地址上一层，运行命令 tensorboard --logdir='logs/'
 # 会返回一个地址，然后用浏览器打开这个地址，在 graph 标签栏下打开
+#summary_writer = tf.summary.FileWriter(logdir='logs/',graph=tf.get_default_graph()) # or sess.graph
 writer = tf.train.SummaryWriter("logs/", sess.graph)
 # important step
-sess.run(tf.initialize_all_variables())
+#sess.run(tf.global_variables_initializer())
+sess.run(tf.initialize_all_variables())  
