@@ -2,11 +2,14 @@
 import tensorflow as tf
 import numpy as np
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 ## Save to file
 # remember to define the same dtype and shape when restore
 W = tf.Variable([[1,2,3],[3,4,5]], dtype=tf.float32, name='weights')
 b = tf.Variable([[1,2,3]], dtype=tf.float32, name='biases')
 
+# init = tf.global_variables_initializer()
 init= tf.initialize_all_variables()
 
 saver = tf.train.Saver()
