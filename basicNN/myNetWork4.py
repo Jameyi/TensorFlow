@@ -2,6 +2,8 @@
 import tensorflow as tf
 import numpy as np
 
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 # restore variables
 # redefine the same shape and same type for your variables
 W = tf.Variable(np.arange(6).reshape((2, 3)), dtype=tf.float32, name="weights")
