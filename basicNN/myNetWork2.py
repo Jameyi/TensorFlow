@@ -48,3 +48,8 @@ writer = tf.train.SummaryWriter("logs/", sess.graph)
 # important step
 #sess.run(tf.global_variables_initializer())
 sess.run(tf.initialize_all_variables())  
+
+
+# python myNetWork2.py
+# cd /home/shiyanlou/TensorFlow/basicNN/logs
+# tensorboard --logdir='/home/shiyanlou/TensorFlow/basicNN/logs' --port=6006
